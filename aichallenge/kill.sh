@@ -1,0 +1,17 @@
+pkill -f robot_state_pub
+pkill -f vehicle_velocit
+pkill -f imu_gnss_poser_
+pkill -f twist2accel
+pkill -f empty_objects_p
+pkill -f goal_pose_visua
+pkill -f path_to_traject
+pkill -f goal_pose_sette
+pkill -f ros2
+pkill -f python3
+pkill -f rviz2
+pkill -f ekf_localizer
+pkill -f mission_planner
+pkill -f component_conta
+pkill -f simple_pure_pur
+pkill -f initial_pose_ad
+pkill -f routing_adaptor

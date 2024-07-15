@@ -6,6 +6,7 @@ ament_auto_find_build_dependencies()
 
 install(PROGRAMS
   script/object_marker.py
+  script/status_relay.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

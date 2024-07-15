@@ -3,8 +3,8 @@ AWSIM_DIRECTORY=/aichallenge/simulator/AWSIM
 
 # for development setting
 pkill ros2; pkill python3; pkill rviz2
-DISABLE_LOGGING=false
-WAIT_TIME_RATIO=1.0
+DISABLE_LOGGING=true
+WAIT_TIME_RATIO=0.5
 
 # Move working directory
 OUTPUT_DIRECTORY=$(date +%Y%m%d-%H%M%S)
