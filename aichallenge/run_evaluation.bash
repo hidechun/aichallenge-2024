@@ -1,5 +1,7 @@
 #!/bin/bash
 AWSIM_DIRECTORY=/aichallenge/simulator/AWSIM
+DISABLE_LOGGING=true
+WAIT_TIME_RATIO=0.01
 
 # Move working directory
 OUTPUT_DIRECTORY=$(date +%Y%m%d-%H%M%S)
@@ -17,47 +19,59 @@ sudo sysctl -w net.core.rmem_max=2147483647 >/dev/null
 echo "Start AWSIM"
 $AWSIM_DIRECTORY/AWSIM.x86_64 >/dev/null &
 PID_AWSIM=$!
-sleep 20
+sleep $(awk "BEGIN {print 20.0*$WAIT_TIME_RATIO}")
 
 # Start Autoware
 echo "Start Autoware"
 ros2 launch aichallenge_system_launch aichallenge_system.launch.xml >autoware.log 2>&1 &
 PID_AUTOWARE=$!
-sleep 10
+sleep $(awk "BEGIN {print 10.0*$WAIT_TIME_RATIO}")
 
-# Start recording rosbag
-echo "Start rosbag"
-ros2 bag record -a -o rosbag2_autoware >/dev/null 2>&1 &
-PID_ROSBAG=$!
-sleep 5
-
-# Start recording rviz2
-echo "Start screen capture"
-until (ros2 service type /debug/service/capture_screen >/dev/null); do
+if [[ $DISABLE_LOGGING == "false" ]]; then
+    # Start recording rosbag
+    echo "Start rosbag"
+    ros2 bag record -a -o rosbag2_autoware >/dev/null 2>&1 &
+    PID_ROSBAG=$!
     sleep 5
-done
+
+    # Start recording rviz2
+    echo "Start screen capture"
+    until (ros2 service type /debug/service/capture_screen >/dev/null); do
+        sleep 5
+    done
+fi
 
 # Move windows
 wmctrl -a "RViz" && wmctrl -r "RViz" -e 0,0,0,1920,1043
 wmctrl -a "AWSIM" && wmctrl -r "AWSIM" -e 0,0,0,900,1043
 
-ros2 service call /debug/service/capture_screen std_srvs/srv/Trigger >/dev/null
-sleep 1
+if [[ $DISABLE_LOGGING == "false" ]]; then
+    # start capture after moving window
+    ros2 service call /debug/service/capture_screen std_srvs/srv/Trigger >/dev/null
+    sleep 1
+fi
 
 # Start driving and wait for the simulation to finish
 echo "Waiting for the simulation"
 ros2 topic pub --once /control/control_mode_request_topic std_msgs/msg/Bool '{data: true}' >/dev/null
 wait $PID_AWSIM
 
-# Stop recording rviz2
-echo "Stop screen capture"
-ros2 service call /debug/service/capture_screen std_srvs/srv/Trigger >/dev/null
-sleep 10
+if [[ $DISABLE_LOGGING == "false" ]]; then
+    # Stop recording rviz2
+    echo "Stop screen capture"
+    ros2 service call /debug/service/capture_screen std_srvs/srv/Trigger >/dev/null
+    sleep 10
 
-# Stop recording rosbag
-echo "Stop rosbag"
-kill $PID_ROSBAG
-wait $PID_ROSBAG
+    # Stop recording rosbag
+    echo "Stop rosbag"
+    kill $PID_ROSBAG
+    wait $PID_ROSBAG
+
+    # Compress rosbag
+    echo "Compress rosbag"
+    tar -czf rosbag2_autoware.tar.gz rosbag2_autoware
+    rm -rf rosbag2_autoware
+fi
 
 # Stop Autoware
 echo "Stop Autoware"
@@ -67,8 +81,3 @@ wait $PID_AUTOWARE
 # Convert result
 echo "Convert result"
 python3 /aichallenge/workspace/src/aichallenge_system/script/result-converter.py 60 11
-
-# Compress rosbag
-echo "Compress rosbag"
-tar -czf rosbag2_autoware.tar.gz rosbag2_autoware
-rm -rf rosbag2_autoware
