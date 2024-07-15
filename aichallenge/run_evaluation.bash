@@ -1,7 +1,10 @@
 #!/bin/bash
 AWSIM_DIRECTORY=/aichallenge/simulator/AWSIM
-DISABLE_LOGGING=true
-WAIT_TIME_RATIO=0.01
+
+# for development setting
+pkill ros2; pkill python3; pkill rviz2
+DISABLE_LOGGING=false
+WAIT_TIME_RATIO=1.0
 
 # Move working directory
 OUTPUT_DIRECTORY=$(date +%Y%m%d-%H%M%S)
@@ -81,3 +84,5 @@ wait $PID_AUTOWARE
 # Convert result
 echo "Convert result"
 python3 /aichallenge/workspace/src/aichallenge_system/script/result-converter.py 60 11
+
+pkill ros2; pkill python3; pkill rviz2
