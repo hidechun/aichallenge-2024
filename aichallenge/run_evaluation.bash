@@ -15,7 +15,7 @@ sudo sysctl -w net.core.rmem_max=2147483647 >/dev/null
 
 # Start AWSIM
 echo "Start AWSIM"
-$AWSIM_DIRECTORY/AWSIM.x86_64 >/dev/null &
+/aichallenge/simulator/AWSIM/AWSIM.x86_64 >/dev/null &
 PID_AWSIM=$!
 sleep 20
 
