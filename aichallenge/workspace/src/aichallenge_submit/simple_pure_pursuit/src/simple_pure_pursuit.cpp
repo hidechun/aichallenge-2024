@@ -105,7 +105,7 @@ void SimplePurePursuit::onTimer()
     double alpha = std::atan2(lookahead_point_y - rear_y, lookahead_point_x - rear_x) -
                    tf2::getYaw(odometry_->pose.pose.orientation);
     cmd.lateral.steering_tire_angle =
-      std::atan2(2.0 * wheel_base_ * std::sin(alpha), lookahead_distance);
+      std::atan2(3.0 * wheel_base_ * std::sin(alpha), lookahead_distance);  // def2.0
   }
   pub_cmd_->publish(cmd);
 }
